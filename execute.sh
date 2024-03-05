@@ -2,7 +2,7 @@
 clear
 make clean
 make
-printf "Starting Predictions..."
+printf "\nStarting Predictions...\n"
 
 for file in $(ls ./traces)
 do
