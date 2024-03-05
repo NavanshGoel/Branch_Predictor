@@ -40,11 +40,12 @@ uint32_t *globalBHT;
 uint32_t *localBHT;
 uint32_t *localHistoryTable;
 uint32_t *choicePredictor;
+
 #define THETA 31
-#define CUSTOM_HISTORY  27
+#define PER_HISTORY  27
 #define PER_LEN  333
-int customHistory[CUSTOM_HISTORY];
-int perceptronTable[PER_LEN][CUSTOM_HISTORY+1];
+int perceptronHistory[PER_HISTORY];
+int perceptronTable[PER_LEN][PER_HISTORY+1];
 //
 
 //------------------------------------//
@@ -91,12 +92,12 @@ void initTournamentPredictor() {
 }
 
 void initPerceptronPredictor() {
-    for (int i=0; i<CUSTOM_HISTORY; i++) {
-        customHistory[i] = 0;
+    for (int i=0; i<PER_HISTORY; i++) {
+        perceptronHistory[i] = 0;
     }
 
     for (int i=0; i<PER_LEN; i++) {
-        for (int j=0; j<CUSTOM_HISTORY+1; j++) {
+        for (int j=0; j<PER_HISTORY+1; j++) {
             perceptronTable[i][j] = 0;
         }
     }
@@ -184,8 +185,8 @@ uint8_t preceptronPredict(uint32_t pc) {
     int bias = perceptronTable[pcLowerBitsPerceptron][0];
     int y;
 
-    for (int i=0; i<CUSTOM_HISTORY; i++) {
-        y = y + perceptronTable[pcLowerBitsPerceptron][i+1] * customHistory[i];
+    for (int i=0; i<PER_HISTORY; i++) {
+        y = y + perceptronTable[pcLowerBitsPerceptron][i+1] * perceptronHistory[i];
     }
     y = y + bias;
 
@@ -325,29 +326,29 @@ void trainPerceptronPredictor(uint32_t pc, uint8_t result) {
     int bias = perceptronTable[pcLowerBitsPerceptron][0];
     int y;
 
-    for (int i=0; i<CUSTOM_HISTORY; i++) {
-        y = y + perceptronTable[pcLowerBitsPerceptron][i+1] * customHistory[i];
+    for (int i=0; i<PER_HISTORY; i++) {
+        y = y + perceptronTable[pcLowerBitsPerceptron][i+1] * perceptronHistory[i];
     }
     y = y + bias;
 
     int resultVal = (result == TAKEN) ? 1 : -1;
     if ((y >=0 && !result) || (y < 0 && result) || (abs(y) <= THETA)) {
         perceptronTable[pcLowerBitsPerceptron][0] = perceptronTable[pcLowerBitsPerceptron][0] + 1*resultVal;
-        for (int i=0; i<CUSTOM_HISTORY; i++) {
-            perceptronTable[pcLowerBitsPerceptron][i+1] = perceptronTable[pcLowerBitsPerceptron][i+1] + customHistory[i]*resultVal;
+        for (int i=0; i<PER_HISTORY; i++) {
+            perceptronTable[pcLowerBitsPerceptron][i+1] = perceptronTable[pcLowerBitsPerceptron][i+1] + perceptronHistory[i]*resultVal;
         }
     }
 
-    int history[CUSTOM_HISTORY];
-    for (int i=0; i<CUSTOM_HISTORY; i++) {
-        history[i] = customHistory[i];
+    int history[PER_HISTORY];
+    for (int i=0; i<PER_HISTORY; i++) {
+        history[i] = perceptronHistory[i];
         if (i == 0) {
-            customHistory[0] = history[0];
+            perceptronHistory[0] = history[0];
         } else {
-            customHistory[i] = history[i-1];
+            perceptronHistory[i] = history[i-1];
         }
     }
-    customHistory[0] = (result == TAKEN) ? 1 : -1;
+    perceptronHistory[0] = (result == TAKEN) ? 1 : -1;
 }
 
 // Train the predictor the last executed branch at PC 'pc' and with
