@@ -41,9 +41,9 @@ uint32_t *localBHT;
 uint32_t *localHistoryTable;
 uint32_t *choicePredictor;
 
-#define THETA 31
-#define PER_HISTORY  27
-#define PER_LEN  333
+#define THETA 79
+#define PER_HISTORY  34
+#define PER_LEN  229
 int perceptronHistory[PER_HISTORY];
 int perceptronTable[PER_LEN][PER_HISTORY+1];
 //
